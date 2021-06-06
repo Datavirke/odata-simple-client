@@ -1,0 +1,21 @@
+[package]
+name = "odata-simple-client"
+version = "0.1.0"
+authors = ["Mathias Pius <contact@pius.io>"]
+description = "Simplified OpenData API Client"
+keywords = ["odata", "client", "opendata"]
+repository = "https://github.com/Datavirke/odata-simple-client"
+license = "MIT"
+
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+hyper = { version = "0.14.7", features = ["client", "http1"] }
+serde = "1.0.126"
+serde_json = "1.0.64"
+urlencoding = "1.1.1"
+thiserror = "1.0.24"
+itertools = "0.10.0"
+log = "0.4.14"
