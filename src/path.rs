@@ -3,11 +3,16 @@ use std::{collections::HashMap, convert::TryInto};
 use hyper::http::uri::{InvalidUri, PathAndQuery};
 use itertools::Itertools;
 
+/// Specifies direction in which the returned results are listed. Use [`ListRequest::order_by`](`crate::ListRequest::order_by`) to change it.
+/// If nothing else is specified, it defaults to [`Direction::Ascending`]
 pub enum Direction {
     Descending,
     Ascending,
 }
 
+/// Used by [`ListRequest::filter`](`crate::ListRequest::filter`) to apply conditional filtering to the returned results.
+///
+/// See [the OData 2.0 documentation (section 4.5)](https://www.odata.org/documentation/odata-version-2-0/uri-conventions/) for more information.
 pub enum Comparison {
     Equal,
     NotEqual,
@@ -17,11 +22,13 @@ pub enum Comparison {
     LessOrEqual,
 }
 
+/// Format of the returned API data. [`DataSource::fetch_paged`](`crate::DataSource::fetch_paged`) forces [`Format::Json`].
 pub enum Format {
     Xml,
     Json,
 }
 
+/// Used by [`ListRequest::inline_count`](`crate::ListRequest::inline_count`) to show number of results left in a query, before all pages have been read.
 pub enum InlineCount {
     None,
     AllPages,
