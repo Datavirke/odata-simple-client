@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, convert::TryInto};
 
 use hyper::http::uri::{InvalidUri, PathAndQuery};
 use itertools::Itertools;
@@ -17,16 +17,16 @@ pub enum Comparison {
     LessOrEqual,
 }
 
-pub struct UriBuilder {
-    base_path: String,
+pub struct PathBuilder {
+    pub(crate) base_path: String,
     resource_type: String,
     id: Option<usize>,
     inner: HashMap<&'static str, String>,
 }
 
-impl UriBuilder {
+impl PathBuilder {
     pub fn new_with_base(base_path: String, resource_type: String) -> Self {
-        UriBuilder {
+        PathBuilder {
             id: None,
             base_path,
             resource_type,
@@ -40,6 +40,11 @@ impl UriBuilder {
 
     pub fn id(mut self, id: usize) -> Self {
         self.id = Some(id);
+        self
+    }
+
+    pub fn base_path(mut self, base_path: String) -> Self {
+        self.base_path = base_path;
         self
     }
 
@@ -140,13 +145,21 @@ impl UriBuilder {
     }
 }
 
+impl TryInto<PathAndQuery> for PathBuilder {
+    type Error = InvalidUri;
+
+    fn try_into(self) -> Result<PathAndQuery, Self::Error> {
+        self.build()
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::UriBuilder;
+    use super::PathBuilder;
 
     #[test]
     fn test_query_builder() {
-        let query = UriBuilder::new("test_resource".into())
+        let query = PathBuilder::new("test_resource".into())
             .top(2)
             .skip(3)
             .order_by("date", None)
@@ -158,7 +171,7 @@ mod tests {
 
     #[test]
     fn test_single_resource_expand() {
-        let query = UriBuilder::new("test_resource".into())
+        let query = PathBuilder::new("test_resource".into())
             .id(100)
             .expand(["DoThing", "What"])
             .expand(["Hello"])
