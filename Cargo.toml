@@ -24,3 +24,4 @@ log = "0.4.14"
 [dev-dependencies]
 hyper-openssl = "0.9.1"
 tokio = { version = "1.13.0", features = ["rt", "macros"]}
+tokio-test = { version = "0.4.2" }

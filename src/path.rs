@@ -3,7 +3,7 @@ use std::{collections::HashMap, convert::TryInto};
 use hyper::http::uri::{InvalidUri, PathAndQuery};
 use itertools::Itertools;
 
-pub enum Order {
+pub enum Direction {
     Descending,
     Ascending,
 }
@@ -20,6 +20,11 @@ pub enum Comparison {
 pub enum Format {
     Xml,
     Json,
+}
+
+pub enum InlineCount {
+    None,
+    AllPages,
 }
 
 pub(crate) struct PathBuilder {
@@ -53,10 +58,10 @@ impl PathBuilder {
         self
     }
 
-    pub fn order_by(mut self, field: &str, order: Option<Order>) -> Self {
-        let order = match order.unwrap_or(Order::Ascending) {
-            Order::Descending => "desc",
-            Order::Ascending => "asc",
+    pub fn order_by(mut self, field: &str, order: Option<Direction>) -> Self {
+        let order = match order.unwrap_or(Direction::Ascending) {
+            Direction::Descending => "desc",
+            Direction::Ascending => "asc",
         };
 
         self.inner.insert(
@@ -91,9 +96,15 @@ impl PathBuilder {
         self
     }
 
-    pub fn inline_count(mut self, value: String) -> Self {
-        self.inner
-            .insert("inlinecount", urlencoding::encode(&value).to_string());
+    pub fn inline_count(mut self, value: InlineCount) -> Self {
+        self.inner.insert(
+            "inlinecount",
+            urlencoding::encode(match value {
+                InlineCount::None => "none",
+                InlineCount::AllPages => "allpages",
+            })
+            .to_string(),
+        );
         self
     }
 
