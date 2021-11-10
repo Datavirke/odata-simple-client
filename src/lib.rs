@@ -1,7 +1,8 @@
 #![feature(trait_alias)]
 mod path;
 
-pub use path::{Comparison, Order, PathBuilder};
+use path::PathBuilder;
+pub use path::{Comparison, Format, Order};
 
 use hyper::{
     body::Buf,
@@ -44,9 +45,11 @@ pub struct Page<T> {
     pub count: Option<String>,
     #[serde(rename = "odata.nextLink")]
     pub next_link: Option<String>,
+    #[serde(rename = "odata.metadata")]
+    pub metadata: Option<String>,
 }
 
-pub async fn extract_as<T: DeserializeOwned>(response: Response<Body>) -> Result<T, Error> {
+async fn extract_as<T: DeserializeOwned>(response: Response<Body>) -> Result<T, Error> {
     let body = hyper::body::aggregate(response).await?;
 
     let mut content = String::new();
@@ -72,23 +75,7 @@ where
         })
     }
 
-    pub async fn get(&self, resource_type: &str, id: usize) -> Result<Response<Body>, Error> {
-        let uri = Uri::builder()
-            .scheme(self.scheme.as_ref())
-            .authority(self.authority.as_ref())
-            .path_and_query(
-                PathBuilder::new_with_base(self.base_path.clone(), resource_type.to_string())
-                    .id(id)
-                    .build()?,
-            )
-            .build()
-            .map_err(Error::from)?;
-
-        debug!("fetching {}", uri);
-        Ok(self.client.get(uri).await?)
-    }
-
-    pub async fn execute<R>(&self, request: R) -> Result<Response<Body>, Error>
+    async fn execute<R>(&self, request: R) -> Result<Response<Body>, Error>
     where
         R: Into<PathBuilder>,
     {
@@ -104,6 +91,22 @@ where
         debug!("fetching {}", uri);
         Ok(self.client.get(uri).await?)
     }
+
+    pub async fn fetch<T>(&self, request: GetRequest) -> Result<T, Error>
+    where
+        T: DeserializeOwned,
+    {
+        let response = self.execute(request).await?;
+        extract_as::<T>(response).await
+    }
+
+    pub async fn fetch_paged<T>(&self, request: ListRequest) -> Result<Page<T>, Error>
+    where
+        T: DeserializeOwned,
+    {
+        let response = self.execute(request).await?;
+        extract_as::<Page<T>>(response).await
+    }
 }
 
 pub struct GetRequest {
@@ -115,6 +118,11 @@ impl<'a> GetRequest {
         GetRequest {
             builder: PathBuilder::new(resource_type.to_string()).id(id),
         }
+    }
+
+    pub fn format(mut self, format: Format) -> Self {
+        self.builder = self.builder.format(format);
+        self
     }
 
     pub fn expand<'f, F>(mut self, field: F) -> Self
@@ -141,6 +149,11 @@ impl<'a> ListRequest {
         ListRequest {
             builder: PathBuilder::new(resource_type.to_string()),
         }
+    }
+
+    pub fn format(mut self, format: Format) -> Self {
+        self.builder = self.builder.format(format);
+        self
     }
 
     pub fn order_by(mut self, field: &str, order: Option<Order>) -> Self {

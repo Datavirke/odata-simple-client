@@ -17,7 +17,12 @@ pub enum Comparison {
     LessOrEqual,
 }
 
-pub struct PathBuilder {
+pub enum Format {
+    Xml,
+    Json,
+}
+
+pub(crate) struct PathBuilder {
     pub(crate) base_path: String,
     resource_type: String,
     id: Option<usize>,
@@ -43,11 +48,6 @@ impl PathBuilder {
         self
     }
 
-    pub fn base_path(mut self, base_path: String) -> Self {
-        self.base_path = base_path;
-        self
-    }
-
     pub fn order_by(mut self, field: &str, order: Option<Order>) -> Self {
         let order = match order.unwrap_or(Order::Ascending) {
             Order::Descending => "desc",
@@ -65,6 +65,18 @@ impl PathBuilder {
     pub fn top(mut self, count: u32) -> Self {
         self.inner
             .insert("top", urlencoding::encode(&count.to_string()).to_string());
+        self
+    }
+
+    pub fn format(mut self, format: Format) -> Self {
+        self.inner.insert(
+            "format",
+            match format {
+                Format::Xml => "xml",
+                Format::Json => "json",
+            }
+            .to_string(),
+        );
         self
     }
 
