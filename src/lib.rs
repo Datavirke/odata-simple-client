@@ -1,12 +1,12 @@
 #![feature(trait_alias)]
-mod filter;
+mod uri;
 
-pub use filter::{Comparison, Filter, Order};
+pub use uri::{Comparison, Order, UriBuilder};
 
 use hyper::{
     body::Buf,
     client::{connect::Connect, Client},
-    http::uri::{Authority, InvalidUri, PathAndQuery, Scheme},
+    http::uri::{Authority, InvalidUri, Scheme},
     Body, Response, Uri,
 };
 use log::debug;
@@ -16,12 +16,10 @@ use thiserror::Error;
 
 pub trait Connector = Connect + Clone + Send + Sync + 'static;
 
-pub struct DataSource<C>
-where
-    C: ,
-{
+pub struct DataSource<C> {
     client: Client<C>,
     authority: Authority,
+    base_path: String,
     scheme: Scheme,
 }
 
@@ -48,20 +46,20 @@ pub struct Page<T> {
     pub next_link: Option<String>,
 }
 
-fn path(resource_type: &str, filter: &Filter) -> Result<PathAndQuery, InvalidUri> {
-    format!(
-        "/api/{resource_type}?{query}",
-        resource_type = urlencoding::encode(resource_type),
-        query = filter.to_query()
-    )
-    .parse()
+pub async fn extract_as<T: DeserializeOwned>(response: Response<Body>) -> Result<T, Error> {
+    let body = hyper::body::aggregate(response).await?;
+
+    let mut content = String::new();
+    body.reader().read_to_string(&mut content)?;
+
+    serde_json::from_str(&content).map_err(|e| Error::Serde(e, content))
 }
 
 impl<C> DataSource<C>
 where
     C: Connector,
 {
-    pub fn new<A>(client: Client<C>, domain: A) -> Result<DataSource<C>, Error>
+    pub fn new<A>(client: Client<C>, domain: A, base_path: String) -> Result<DataSource<C>, Error>
     where
         Authority: TryFrom<A>,
         Error: From<<Authority as TryFrom<A>>::Error>,
@@ -69,37 +67,24 @@ where
         Ok(DataSource {
             client,
             authority: Authority::try_from(domain)?,
+            base_path,
             scheme: Scheme::HTTPS,
         })
     }
 
-    pub async fn get(
-        &self,
-        resource_type: &str,
-        filter: Option<Filter>,
-    ) -> Result<Response<Body>, Error> {
+    pub async fn get<T>(&self, resource_type: &str, id: usize) -> Result<Response<Body>, Error> {
         let uri = Uri::builder()
             .scheme(self.scheme.as_ref())
             .authority(self.authority.as_ref())
-            .path_and_query(path(resource_type, &filter.unwrap_or_default())?)
+            .path_and_query(
+                UriBuilder::new_with_base(self.base_path.clone(), resource_type.to_string())
+                    .id(id)
+                    .build()?,
+            )
             .build()
             .map_err(Error::from)?;
 
         debug!("fetching {}", uri);
         Ok(self.client.get(uri).await?)
-    }
-
-    pub async fn get_as<T: DeserializeOwned>(
-        &self,
-        resource_type: &str,
-        filter: Option<Filter>,
-    ) -> Result<Page<T>, Error> {
-        let response = self.get(resource_type, filter).await?;
-        let body = hyper::body::aggregate(response).await?;
-
-        let mut content = String::new();
-        body.reader().read_to_string(&mut content)?;
-
-        serde_json::from_str(&content).map_err(|e| Error::Serde(e, content))
     }
 }
