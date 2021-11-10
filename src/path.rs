@@ -65,8 +65,8 @@ impl PathBuilder {
         self
     }
 
-    pub fn order_by(mut self, field: &str, order: Option<Direction>) -> Self {
-        let order = match order.unwrap_or(Direction::Ascending) {
+    pub fn order_by(mut self, field: &str, order: Direction) -> Self {
+        let order = match order {
             Direction::Descending => "desc",
             Direction::Ascending => "asc",
         };
@@ -191,13 +191,14 @@ impl TryInto<PathAndQuery> for PathBuilder {
 #[cfg(test)]
 mod tests {
     use super::PathBuilder;
+    use crate::Direction;
 
     #[test]
     fn test_query_builder() {
         let query = PathBuilder::new("test_resource".into())
             .top(2)
             .skip(3)
-            .order_by("date", None)
+            .order_by("date", Direction::Ascending)
             .build()
             .unwrap();
 
