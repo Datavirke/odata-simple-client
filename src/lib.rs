@@ -38,6 +38,7 @@ pub enum Error {
     Io(#[from] std::io::Error),
 }
 
+///
 #[derive(Debug, Deserialize)]
 pub struct Page<T> {
     pub value: Vec<T>,
@@ -79,8 +80,7 @@ where
     where
         R: Into<PathBuilder>,
     {
-        let mut builder: PathBuilder = request.into();
-        builder.base_path = self.base_path.clone();
+        let builder: PathBuilder = request.into().base_path(self.base_path.clone());
 
         let uri = Uri::builder()
             .scheme(self.scheme.as_ref())
@@ -96,7 +96,9 @@ where
     where
         T: DeserializeOwned,
     {
-        let response = self.execute(request).await?;
+        let response = self
+            .execute(Into::<PathBuilder>::into(request).format(Format::Json))
+            .await?;
         extract_as::<T>(response).await
     }
 
@@ -104,7 +106,9 @@ where
     where
         T: DeserializeOwned,
     {
-        let response = self.execute(request).await?;
+        let response = self
+            .execute(Into::<PathBuilder>::into(request).format(Format::Json))
+            .await?;
         extract_as::<Page<T>>(response).await
     }
 }

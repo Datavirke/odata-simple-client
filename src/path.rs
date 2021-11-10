@@ -48,6 +48,11 @@ impl PathBuilder {
         self
     }
 
+    pub fn base_path(mut self, base_path: String) -> Self {
+        self.base_path = base_path;
+        self
+    }
+
     pub fn order_by(mut self, field: &str, order: Option<Order>) -> Self {
         let order = match order.unwrap_or(Order::Ascending) {
             Order::Descending => "desc",
