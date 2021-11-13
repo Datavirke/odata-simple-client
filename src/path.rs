@@ -12,7 +12,7 @@ pub enum Direction {
 
 /// Used by [`ListRequest::filter`](`crate::ListRequest::filter`) to apply conditional filtering to the returned results.
 ///
-/// See [the OData 2.0 documentation (section 4.5)](https://www.odata.org/documentation/odata-version-2-0/uri-conventions/) for more information.
+/// See [the OData 3.0 documentation (section 5.1.2)](https://www.odata.org/documentation/odata-version-3-0/url-conventions/) for more information.
 pub enum Comparison {
     Equal,
     NotEqual,

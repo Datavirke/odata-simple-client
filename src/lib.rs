@@ -1,6 +1,6 @@
 #![feature(trait_alias)]
 
-//! This crate provides a Rust-interface to an [OData 2.0](https://www.odata.org/documentation/odata-version-2-0/) API over HTTP(S)
+//! This crate provides a Rust-interface to an [OData 3.0](https://www.odata.org/documentation/odata-version-3-0/) API over HTTP(S)
 //!
 //! To get started, construct a [`DataSource`] and then create either a [`ListRequest`] or [`GetRequest`] and
 //! [`fetch`](`DataSource::fetch`)/[`fetch_paged`](`DataSource::fetch_paged`) it using your [`DataSource`]
