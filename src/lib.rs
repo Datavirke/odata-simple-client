@@ -57,6 +57,7 @@ use thiserror::Error;
 pub trait Connector = Connect + Clone + Send + Sync + 'static;
 
 /// Represents a target OData API.
+#[derive(Clone)]
 pub struct DataSource<C> {
     client: Client<C>,
     authority: Authority,
