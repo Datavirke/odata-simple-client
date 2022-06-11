@@ -37,6 +37,11 @@
 //!  ```
 //! The example above has requirements on a number of crates. See the `Cargo.toml`-file for a list.
 
+#[cfg(feature = "rate-limiting")]
+mod ratelimiting;
+#[cfg(feature = "rate-limiting")]
+pub use ratelimiting::RateLimitedDataSource;
+
 mod path;
 
 use path::PathBuilder;
