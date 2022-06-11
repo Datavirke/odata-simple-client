@@ -1,6 +1,6 @@
 [package]
 name = "odata-simple-client"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Mathias Pius <contact@pius.io>"]
 description = "Simplified OpenData API Client"
 keywords = ["odata", "client", "opendata"]
@@ -12,16 +12,16 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-log = "0.4.14"
-itertools = "0.10.0"
+log = "0.4.17"
+itertools = "0.10.3"
 
-hyper = { version = "0.14.7", features = ["client", "http1"] }
-serde = { version = "1.0.126", features = ["derive"] }
-serde_json = "1.0.64"
+hyper = { version = "0.14.19", features = ["client", "http1"] }
+serde = { version = "1.0.137", features = ["derive"] }
+serde_json = "1.0.81"
 urlencoding = "2.1.0"
-thiserror = "1.0.24"
+thiserror = "1.0.31"
 
 [dev-dependencies]
-hyper-openssl = "0.9.1"
-tokio = { version = "1.13.0", features = ["rt", "macros"]}
+hyper-openssl = "0.9.2"
+tokio = { version = "1.19.2", features = ["rt", "macros"]}
 tokio-test = { version = "0.4.2" }
