@@ -233,7 +233,7 @@ pub struct GetRequest {
     builder: PathBuilder,
 }
 
-impl<'a> GetRequest {
+impl GetRequest {
     /// Constructs a GET request for `<DataSource Path>/resource_type(id)`
     ///
     /// Must be [`DataSource::fetch`]ed using a [`DataSource`] to retrieve data.
@@ -274,7 +274,7 @@ pub struct ListRequest {
     builder: PathBuilder,
 }
 
-impl<'a> ListRequest {
+impl ListRequest {
     pub fn new(resource_type: &str) -> Self {
         ListRequest {
             builder: PathBuilder::new(resource_type.to_string()),
