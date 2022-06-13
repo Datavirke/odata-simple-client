@@ -37,7 +37,7 @@ where
         }
     }
 
-    /// Construct a RateLimitedResource from an existing [`DataSource`], 
+    /// Construct a RateLimitedResource from an existing [`DataSource`],
     /// and a non-zero integer indicating the maximum number of requests
     /// the DataSource should serve per second.
     pub fn per_second(datasource: DataSource<C>, per_second: NonZeroU32) -> Self {
