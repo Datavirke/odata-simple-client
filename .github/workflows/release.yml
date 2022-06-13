@@ -84,3 +84,4 @@ jobs:
         uses: katyo/publish-crates@v1
         with:
           registry-token: ${{ secrets.CARGO_LOGIN_TOKEN }}
+          args: "+nightly"
