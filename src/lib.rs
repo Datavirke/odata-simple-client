@@ -1,5 +1,3 @@
-#![feature(trait_alias)]
-
 //! This crate provides a Rust-interface to an [OData 3.0](https://www.odata.org/documentation/odata-version-3-0/) API over HTTP(S)
 //!
 //! To get started, construct a [`DataSource`] and then create either a [`ListRequest`] or [`GetRequest`] and
@@ -59,7 +57,8 @@ use std::{convert::TryFrom, io::Read};
 use thiserror::Error;
 
 /// Umbrella trait covering all the traits required of a [`Client`] for a [`DataSource`] to work.
-pub trait Connector = Connect + Clone + Send + Sync + 'static;
+pub trait Connector: Connect + Clone + Send + Sync + 'static {}
+impl<T: Connect + Clone + Send + Sync + 'static> Connector for T {}
 
 /// Represents a target OData API.
 #[derive(Clone)]
