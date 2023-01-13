@@ -1,6 +1,6 @@
 [package]
 name = "odata-simple-client"
-version = "0.2.4"
+version = "0.2.5"
 authors = ["Mathias Pius <contact@pius.io>"]
 description = "Simplified OpenData API Client"
 keywords = ["odata", "client", "opendata"]
