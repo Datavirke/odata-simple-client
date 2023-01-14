@@ -73,8 +73,7 @@ impl PathBuilder {
 
         self.inner.insert(
             "orderby",
-            urlencoding::encode(&format!("{field} {order}", field = field, order = order))
-                .to_string(),
+            urlencoding::encode(&format!("{field} {order}")).to_string(),
         );
         self
     }
@@ -127,13 +126,7 @@ impl PathBuilder {
 
         self.inner.insert(
             "filter",
-            urlencoding::encode(&format!(
-                "{field} {comparison} {value}",
-                field = field,
-                comparison = comparison,
-                value = value
-            ))
-            .to_string(),
+            urlencoding::encode(&format!("{field} {comparison} {value}")).to_string(),
         );
         self
     }
