@@ -1,7 +1,6 @@
 use std::{collections::HashMap, convert::TryInto};
 
 use hyper::http::uri::{InvalidUri, PathAndQuery};
-use itertools::Itertools;
 
 /// Specifies direction in which the returned results are listed. Use [`ListRequest::order_by`](`crate::ListRequest::order_by`) to change it.
 /// If nothing else is specified, it defaults to [`Direction::Ascending`]
@@ -160,7 +159,11 @@ impl PathBuilder {
     where
         F: IntoIterator<Item = &'f str>,
     {
-        let encoded = field.into_iter().map(urlencoding::encode).join(",");
+        let encoded = field
+            .into_iter()
+            .map(|field| urlencoding::encode(field).into_owned())
+            .collect::<Vec<_>>()
+            .join(",");
 
         // We don't really care if the value is overwritten.
         let _ = self
@@ -175,6 +178,22 @@ impl PathBuilder {
     }
 
     pub fn build(&self) -> Result<PathAndQuery, InvalidUri> {
+        let query = {
+            let mut kv = self
+                .inner
+                .iter()
+                .map(|(key, value)| {
+                    format!(
+                        "${key}={value}",
+                        key = urlencoding::encode(key),
+                        value = value
+                    )
+                })
+                .collect::<Vec<_>>();
+            kv.sort();
+            kv
+        };
+
         format!(
             "{base_path}/{resource_type}{id}?{query}",
             base_path = self.base_path,
@@ -183,18 +202,7 @@ impl PathBuilder {
                 .id
                 .map(|id| format!("({})", urlencoding::encode(&id.to_string())))
                 .unwrap_or_default(),
-            query = self
-                .inner
-                .iter()
-                .sorted()
-                .map(|(key, value)| {
-                    format!(
-                        "${key}={value}",
-                        key = urlencoding::encode(key),
-                        value = value
-                    )
-                })
-                .join("&")
+            query = query.join("&")
         )
         .parse()
     }
