@@ -5,35 +5,52 @@ use itertools::Itertools;
 
 /// Specifies direction in which the returned results are listed. Use [`ListRequest::order_by`](`crate::ListRequest::order_by`) to change it.
 /// If nothing else is specified, it defaults to [`Direction::Ascending`]
+#[derive(Debug, Clone, Copy)]
 pub enum Direction {
+    /// List results in descending order (largest to smallest)
     Descending,
+    /// List results in ascending order (smallest to larged)
     Ascending,
 }
 
 /// Used by [`ListRequest::filter`](`crate::ListRequest::filter`) to apply conditional filtering to the returned results.
 ///
 /// See [the OData 3.0 documentation (section 5.1.2)](https://www.odata.org/documentation/odata-version-3-0/url-conventions/) for more information.
+#[derive(Debug, Clone, Copy)]
 pub enum Comparison {
+    /// The Equal operator evaluates to true if the field is equal to the value, otherwise if evaluates to false.
     Equal,
+    /// The NotEqual operator evaluates to true if the field is not equal to the value, otherwise if evaluates to false.
     NotEqual,
+    /// The GreaterThan operator evaluates to true if the field is greater than the value, otherwise if evaluates to false.
     GreaterThan,
+    /// The GreaterOrEqual operator  evaluates to true if the field is greater than or equal to the value, otherwise if evaluates to false.
     GreaterOrEqual,
+    /// The LessThan operator evaluates to true if the field is less than the value, otherwise if evaluates to false.
     LessThan,
+    /// LessOrEqual operator evaluates to true if the field is less than or equal to the value, otherwise if evaluates to false.
     LessOrEqual,
 }
 
 /// Format of the returned API data. [`DataSource::fetch_paged`](`crate::DataSource::fetch_paged`) forces [`Format::Json`].
+#[derive(Debug, Clone, Copy)]
 pub enum Format {
+    /// Request that the returned API data is xml-formatted.
     Xml,
+    /// Request that the returned API data is json-formatted.
     Json,
 }
 
 /// Used by [`ListRequest::inline_count`](`crate::ListRequest::inline_count`) to show number of results left in a query, before all pages have been read.
+#[derive(Debug, Clone, Copy)]
 pub enum InlineCount {
+    /// Don't include an inline count.
     None,
+    /// Include inline count on all pages.
     AllPages,
 }
 
+#[derive(Debug, Clone)]
 pub(crate) struct PathBuilder {
     pub(crate) base_path: String,
     resource_type: String,
@@ -71,7 +88,8 @@ impl PathBuilder {
             Direction::Ascending => "asc",
         };
 
-        self.inner.insert(
+        // We don't really care if the value is overwritten.
+        let _ = self.inner.insert(
             "orderby",
             urlencoding::encode(&format!("{field} {order}")).to_string(),
         );
@@ -79,13 +97,16 @@ impl PathBuilder {
     }
 
     pub fn top(mut self, count: u32) -> Self {
-        self.inner
+        // We don't really care if the value is overwritten.
+        let _ = self
+            .inner
             .insert("top", urlencoding::encode(&count.to_string()).to_string());
         self
     }
 
     pub fn format(mut self, format: Format) -> Self {
-        self.inner.insert(
+        // We don't really care if the value is overwritten.
+        let _ = self.inner.insert(
             "format",
             match format {
                 Format::Xml => "xml",
@@ -97,13 +118,16 @@ impl PathBuilder {
     }
 
     pub fn skip(mut self, count: u32) -> Self {
-        self.inner
+        // We don't really care if the value is overwritten.
+        let _ = self
+            .inner
             .insert("skip", urlencoding::encode(&count.to_string()).to_string());
         self
     }
 
     pub fn inline_count(mut self, value: InlineCount) -> Self {
-        self.inner.insert(
+        // We don't really care if the value is overwritten.
+        let _ = self.inner.insert(
             "inlinecount",
             urlencoding::encode(match value {
                 InlineCount::None => "none",
@@ -124,7 +148,8 @@ impl PathBuilder {
             Comparison::LessOrEqual => "le",
         };
 
-        self.inner.insert(
+        // We don't really care if the value is overwritten.
+        let _ = self.inner.insert(
             "filter",
             urlencoding::encode(&format!("{field} {comparison} {value}")).to_string(),
         );
@@ -137,7 +162,9 @@ impl PathBuilder {
     {
         let encoded = field.into_iter().map(urlencoding::encode).join(",");
 
-        self.inner
+        // We don't really care if the value is overwritten.
+        let _ = self
+            .inner
             .entry("expand")
             .and_modify(|current| {
                 current.push(',');
