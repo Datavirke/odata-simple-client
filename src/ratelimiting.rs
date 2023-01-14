@@ -16,7 +16,7 @@ pub use governor::Quota;
 /// Rate-limited wrapper around a DataSource. Requires the 'rate-limiter' feature to be enabled.
 /// Cloning the RateLimitedDataSource shares the rate-limiting mechanism between the two copies,
 /// preserving the rate-limiting guarantees across all of them.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct RateLimitedDataSource<C>
 where
     C: Connector,
@@ -102,6 +102,37 @@ where
         deserialize_as::<T>(response).await
     }
 
+    /// Fetch a [`Page`]d list of resources using a [`ListRequest`]
+    /// ```rust
+    /// # use hyper::{Client, client::HttpConnector};
+    /// # use hyper_openssl::{HttpsConnector};
+    /// # use odata_simple_client::{DataSource, ListRequest, Page, InlineCount, RateLimitedDataSource};
+    /// # use serde::Deserialize;
+    /// #
+    /// # let client: Client<HttpsConnector<HttpConnector>> =
+    /// #   Client::builder().build(HttpsConnector::<HttpConnector>::new().unwrap());
+    /// #
+    /// # let datasource = DataSource::new(client, "oda.ft.dk", Some(String::from("/api"))).unwrap();
+    ///
+    /// // Rate-limit the data source.
+    /// let datasource = RateLimitedDataSource::per_second(
+    ///     datasource,
+    ///     std::num::NonZeroU32::new(1u32).unwrap()
+    /// );
+    /// #
+    /// #[derive(Deserialize)]
+    /// struct Dokument {
+    ///     titel: String,
+    /// }
+    ///
+    /// # tokio_test::block_on(async {
+    /// let page: Page<Dokument> = datasource
+    ///     .fetch_paged(ListRequest::new("Dokument")
+    ///         .inline_count(InlineCount::AllPages)
+    ///     ).await.unwrap();
+    /// assert!(page.count.unwrap().parse::<u32>().unwrap() > 0)
+    /// # });
+    /// ```
     pub async fn fetch_paged<T>(&self, request: ListRequest) -> Result<Page<T>, Error>
     where
         T: DeserializeOwned,
