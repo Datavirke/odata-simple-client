@@ -9,7 +9,7 @@ use itertools::Itertools;
 pub enum Direction {
     /// List results in descending order (largest to smallest)
     Descending,
-    /// List results in ascending order (smallest to larged)
+    /// List results in ascending order (smallest to largest)
     Ascending,
 }
 
